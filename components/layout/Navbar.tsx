@@ -64,12 +64,6 @@ export default function Navbar() {
               Extension
             </Link>
             <Link
-              href="/analytics"
-              className="text-gray-700 hover:text-emerald-600 transition-colors font-medium"
-            >
-              Analytics
-            </Link>
-            <Link
               href="/contracts"
               className="text-gray-700 hover:text-emerald-600 transition-colors font-medium"
             >
