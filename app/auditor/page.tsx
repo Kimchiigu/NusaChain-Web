@@ -5,16 +5,11 @@ import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import AuditorPanel from '@/components/auditor/AuditorPanel';
+import AuditorDemo from '@/components/auditor/AuditorDemo';
 
 export default function AuditorPage() {
   const [user, loading] = useAuthState(auth);
   const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/auth/signin');
-    }
-  }, [user, loading, router]);
 
   if (loading) {
     return (
@@ -29,10 +24,6 @@ export default function AuditorPage() {
     );
   }
 
-  if (!user) {
-    return null;
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -43,7 +34,7 @@ export default function AuditorPage() {
           </p>
         </div>
         
-        <AuditorPanel />
+        {user ? <AuditorPanel /> : <AuditorDemo />}
       </div>
     </div>
   );
