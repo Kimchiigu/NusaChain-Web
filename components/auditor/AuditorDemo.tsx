@@ -34,7 +34,7 @@ export default function AuditorDemo() {
               </p>
             </div>
             <Link href="/auth/signin">
-              <Button className="bg-blue-600 hover:bg-blue-700">
+              <Button className="bg-emerald-600 hover:bg-emerald-700">
                 Sign In
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -260,7 +260,7 @@ export default function AuditorDemo() {
 
           <div className="mt-6 text-center">
             <Link href="/auth/signup">
-              <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600">
+              <Button size="lg" className="bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700">
                 Get Started Free
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>

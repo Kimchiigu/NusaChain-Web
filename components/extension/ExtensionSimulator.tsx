@@ -157,6 +157,7 @@ export default function ExtensionSimulator() {
                 rel="noopener noreferrer"
               >
                 <Button size="lg" className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600">
+                <Button size="lg" className="bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700">
                   <Download className="w-5 h-5 mr-2" />
                   Install Extension
                 </Button>
