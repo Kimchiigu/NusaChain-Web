@@ -23,6 +23,7 @@ import {
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/lib/firebase";
 import { saveAuditReport, getAuditReports } from "@/lib/firebase-utils";
+import { deleteAuditReport, updateTrustScore } from "@/lib/firebase-utils";
 import { AuditReport } from "@/types/security";
 
 interface AuditResult {
@@ -44,6 +45,7 @@ export default function AuditorPanel() {
   const [auditHistory, setAuditHistory] = useState<AuditReport[]>([]);
   const [selectedHistoryItem, setSelectedHistoryItem] = useState<AuditReport | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -158,6 +160,10 @@ export default function AuditorPanel() {
 
       // Save to Firebase
       if (response.ok) {
+        // Update trust score based on audit results
+        const scoreChange = isMalicious ? -15 : 5;
+        await updateTrustScore(url, scoreChange);
+        
         await saveAuditReport({
           url,
           userId: user.uid,
@@ -180,6 +186,26 @@ export default function AuditorPanel() {
       setError("Audit failed. Please try again.");
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const handleDeleteAudit = async (auditId: string) => {
+    if (!user) return;
+    
+    setDeletingId(auditId);
+    try {
+      await deleteAuditReport(auditId);
+      setAuditHistory(prev => prev.filter(audit => audit.id !== auditId));
+      
+      // If the deleted item was selected, clear selection
+      if (selectedHistoryItem?.id === auditId) {
+        const remaining = auditHistory.filter(audit => audit.id !== auditId);
+        setSelectedHistoryItem(remaining.length > 0 ? remaining[0] : null);
+      }
+    } catch (error) {
+      console.error('Error deleting audit:', error);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -234,7 +260,7 @@ export default function AuditorPanel() {
                 <Button
                   onClick={runFullAudit}
                   disabled={isAnalyzing || !user}
-                  className="bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600"
+                  className="bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700"
                 >
                   {isAnalyzing ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -385,15 +411,33 @@ export default function AuditorPanel() {
                         onClick={() => setSelectedHistoryItem(audit)}
                         className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                           selectedHistoryItem?.id === audit.id
-                            ? 'border-blue-500 bg-blue-50'
+                            ? 'border-emerald-500 bg-emerald-50'
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
                       >
-                        <div className="flex items-center space-x-2 mb-2">
-                          <Globe className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm font-medium truncate">
-                            {audit.url}
-                          </span>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center space-x-2 flex-1 min-w-0">
+                            <Globe className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            <span className="text-sm font-medium truncate">
+                              {audit.url}
+                            </span>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteAudit(audit.id);
+                            }}
+                            disabled={deletingId === audit.id}
+                            className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
+                          >
+                            {deletingId === audit.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <XCircle className="w-3 h-3" />
+                            )}
+                          </Button>
                         </div>
                         <div className="flex items-center justify-between">
                           <Badge

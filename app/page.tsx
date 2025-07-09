@@ -41,79 +41,39 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden bg-white border-b border-gray-100">
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-blue-500/5" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center">
-            <div className="w-24 h-24 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Image
-                src="/assets/nusachain-logo-icon.png"
-                alt="Loading..."
-                width={128}
-                height={128}
-                className="rounded-full"
-              />
-            </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-              <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
-                NusaChain
-              </span>
-              <br />
-              Security Ecosystem
-            </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Comprehensive Web3 security suite protecting users through
-              advanced auditing, real-time threat detection, and AI-powered
-              smart contract fraud analysis using Random Forest algorithms.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              {user ? (
-                <Link href="/auditor">
-                  <Button
-                    size="lg"
-                    className="bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600"
-                  >
-                    <Play className="w-5 h-5 mr-2" />
-                    Start Security Audit
-                  </Button>
-                </Link>
-              ) : (
-                <Link href="/auth/signup">
-                  <Button
-                    size="lg"
-                    className="bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600"
-                  >
-                    Get Started Free
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </Link>
-              )}
-              <Link href="/extension">
-                <Button variant="outline" size="lg">
-                  <Chrome className="w-5 h-5 mr-2" />
-                  Try Extension Demo
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {user ? (
           // Dashboard for authenticated users
           <div className="space-y-8">
-            {/* Welcome Back */}
-            <div className="bg-white rounded-2xl p-6 border border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Welcome back, {user.email}
-              </h2>
-              <p className="text-gray-600">
-                Your security dashboard is ready. Start with a new audit or
-                review your recent activity.
-              </p>
+            {/* Hero Section for Logged In Users */}
+            <div className="relative overflow-hidden bg-white border-b border-gray-100 rounded-2xl">
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-blue-500/5" />
+              <div className="relative p-8">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-gradient-to-r from-emerald-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Image
+                      src="/assets/nusachain-logo-icon.png"
+                      alt="Loading..."
+                      width={64}
+                      height={64}
+                      className="rounded-full"
+                    />
+                  </div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+                      NusaChain
+                    </span>{' '}
+                    Security Dashboard
+                  </h1>
+                  <p className="text-gray-600">
+                    Your comprehensive Web3 security suite is ready. Start with a new audit or review your recent activity.
+                  </p>
+                </div>
+              </div>
             </div>
+
+            {/* Welcome Back */}
+            {/* Removed - replaced with hero section above */}
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -171,7 +131,7 @@ export default function Home() {
               <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
-                    <Brain className="w-5 h-5 text-purple-600" />
+                    <Brain className="w-5 h-5 text-emerald-600" />
                     <span>AI Contract Analysis</span>
                   </CardTitle>
                 </CardHeader>
@@ -190,7 +150,54 @@ export default function Home() {
           </div>
         ) : (
           // Public landing page content
-          <div className="space-y-16">
+          <div className="space-y-8">
+            {/* Hero Section for Non-Logged In Users */}
+            <div className="relative overflow-hidden bg-white border-b border-gray-100 rounded-2xl">
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-blue-500/5" />
+              <div className="relative px-8 py-16">
+                <div className="text-center">
+                  <div className="w-24 h-24 bg-gradient-to-r from-emerald-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Image
+                      src="/assets/nusachain-logo-icon.png"
+                      alt="Loading..."
+                      width={96}
+                      height={96}
+                      className="rounded-full"
+                    />
+                  </div>
+                  <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+                    <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+                      NusaChain
+                    </span>
+                    <br />
+                    Security Ecosystem
+                  </h1>
+                  <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                    Comprehensive Web3 security suite protecting users through
+                    advanced auditing, real-time threat detection, and AI-powered
+                    smart contract fraud analysis using Random Forest algorithms.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Link href="/auth/signup">
+                      <Button
+                        size="lg"
+                        className="bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700"
+                      >
+                        Get Started Free
+                        <ArrowRight className="w-5 h-5 ml-2" />
+                      </Button>
+                    </Link>
+                    <Link href="/extension">
+                      <Button variant="outline" size="lg">
+                        <Chrome className="w-5 h-5 mr-2" />
+                        Try Extension Demo
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Features */}
             <div>
               <div className="text-center mb-12">
@@ -247,9 +254,9 @@ export default function Home() {
             </div>
 
             {/* New AI Contract Analysis Feature */}
-            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-8 border border-purple-100">
+            <div className="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-2xl p-8 border border-emerald-100">
               <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-gradient-to-r from-emerald-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Brain className="w-8 h-8 text-white" />
                 </div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">
@@ -272,7 +279,7 @@ export default function Home() {
                 </div>
 
                 <div className="bg-white p-6 rounded-xl border border-gray-200">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-emerald-600 rounded-lg flex items-center justify-center mb-4">
                     <Zap className="w-6 h-6 text-white" />
                   </div>
                   <h4 className="font-bold text-gray-900 mb-2">Real-time Analysis</h4>
@@ -282,7 +289,7 @@ export default function Home() {
                 </div>
 
                 <div className="bg-white p-6 rounded-xl border border-gray-200">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-emerald-600 to-blue-600 rounded-lg flex items-center justify-center mb-4">
                     <BarChart3 className="w-6 h-6 text-white" />
                   </div>
                   <h4 className="font-bold text-gray-900 mb-2">Comprehensive Reports</h4>
@@ -294,7 +301,7 @@ export default function Home() {
 
               <div className="text-center">
                 <Link href="/contracts">
-                  <Button size="lg" className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600">
+                  <Button size="lg" className="bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700">
                     <Brain className="w-5 h-5 mr-2" />
                     Try AI Contract Analysis
                   </Button>
@@ -353,7 +360,7 @@ export default function Home() {
             </div>
 
             {/* CTA */}
-            <div className="text-center bg-gradient-to-r from-emerald-500 to-blue-500 rounded-2xl p-8 text-white">
+            <div className="text-center bg-gradient-to-r from-emerald-600 to-blue-600 rounded-2xl p-8 text-white">
               <h2 className="text-3xl font-bold mb-4">Ready to Secure Web3?</h2>
               <p className="text-xl mb-6 opacity-90">
                 Join the security revolution and protect yourself from Web3

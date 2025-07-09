@@ -4,6 +4,7 @@ import {
   addDoc, 
   getDoc, 
   getDocs, 
+  deleteDoc,
   updateDoc, 
   query, 
   where, 
@@ -13,13 +14,15 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { AuditReport, TrustScore, SuspiciousTransaction } from '@/types/security';
+import { ContractAnalysisData } from '@/types/security';
 
 // Collection names
 const COLLECTIONS = {
   AUDIT_REPORTS: 'auditReports',
   TRUST_SCORES: 'trustScores',
   SUSPICIOUS_TRANSACTIONS: 'suspiciousTransactions',
-  USER_AUDITS: 'userAudits'
+  USER_AUDITS: 'userAudits',
+  CONTRACT_ANALYSES: 'contractAnalyses'
 };
 
 // Audit Reports
@@ -68,6 +71,15 @@ export async function getAuditReports(userId?: string) {
   }
 }
 
+export async function deleteAuditReport(auditId: string) {
+  try {
+    await deleteDoc(doc(db, COLLECTIONS.AUDIT_REPORTS, auditId));
+  } catch (error) {
+    console.error('Error deleting audit report:', error);
+    throw error;
+  }
+}
+
 // Trust Scores
 export async function getTrustScore(url: string): Promise<TrustScore | null> {
   try {
@@ -98,8 +110,9 @@ export async function updateTrustScore(url: string, scoreChange: number) {
     
     if (existingScore) {
       const docRef = doc(db, COLLECTIONS.TRUST_SCORES, existingScore.id);
+      const newScore = Math.max(0, Math.min(100, existingScore.score + scoreChange));
       await updateDoc(docRef, {
-        score: increment(scoreChange),
+        score: newScore,
         lastUpdated: serverTimestamp(),
         reportCount: increment(1)
       });
@@ -148,6 +161,79 @@ export async function getSuspiciousTransactions(contractAddress: string) {
     })) as SuspiciousTransaction[];
   } catch (error) {
     console.error('Error getting suspicious transactions:', error);
+    throw error;
+  }
+}
+
+// Contract Analysis
+export async function saveContractAnalysis(analysis: Omit<ContractAnalysisData, 'id' | 'createdAt'>) {
+  try {
+    const docRef = await addDoc(collection(db, COLLECTIONS.CONTRACT_ANALYSES), {
+      ...analysis,
+      createdAt: serverTimestamp(),
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error('Error saving contract analysis:', error);
+    throw error;
+  }
+}
+
+export async function getContractAnalysis(contractAddress: string): Promise<ContractAnalysisData | null> {
+  try {
+    const q = query(
+      collection(db, COLLECTIONS.CONTRACT_ANALYSES),
+      where('contractAddress', '==', contractAddress),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) {
+      return null;
+    }
+    
+    const doc = querySnapshot.docs[0];
+    return {
+      id: doc.id,
+      ...doc.data()
+    } as ContractAnalysisData;
+  } catch (error) {
+    console.error('Error getting contract analysis:', error);
+    throw error;
+  }
+}
+
+export async function getContractAnalyses(userId?: string): Promise<ContractAnalysisData[]> {
+  try {
+    let q = query(
+      collection(db, COLLECTIONS.CONTRACT_ANALYSES),
+      orderBy('createdAt', 'desc')
+    );
+    
+    if (userId) {
+      q = query(
+        collection(db, COLLECTIONS.CONTRACT_ANALYSES),
+        where('userId', '==', userId),
+        orderBy('createdAt', 'desc')
+      );
+    }
+    
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as ContractAnalysisData[];
+  } catch (error) {
+    console.error('Error getting contract analyses:', error);
+    throw error;
+  }
+}
+
+export async function deleteContractAnalysis(analysisId: string) {
+  try {
+    await deleteDoc(doc(db, COLLECTIONS.CONTRACT_ANALYSES, analysisId));
+  } catch (error) {
+    console.error('Error deleting contract analysis:', error);
     throw error;
   }
 }

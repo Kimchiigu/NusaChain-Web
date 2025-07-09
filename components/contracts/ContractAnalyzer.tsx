@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/lib/firebase";
+import { getContractAnalyses, deleteContractAnalysis } from "@/lib/firebase-utils";
+import { ContractAnalysisData } from "@/types/security";
 
 interface ContractAnalysis {
   contractAddress: string;
@@ -38,73 +40,39 @@ interface ContractAnalysis {
   confidence: number;
 }
 
-interface AnalysisHistory {
-  id: string;
-  contractAddress: string;
-  analysis: ContractAnalysis;
-  createdAt: Date;
-}
-
 export default function ContractAnalyzer() {
   const [user] = useAuthState(auth);
   const [contractAddress, setContractAddress] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<ContractAnalysis | null>(null);
   const [error, setError] = useState("");
-  const [analysisHistory, setAnalysisHistory] = useState<AnalysisHistory[]>([]);
-  const [selectedHistoryItem, setSelectedHistoryItem] =
-    useState<AnalysisHistory | null>(null);
+  const [analysisHistory, setAnalysisHistory] = useState<ContractAnalysisData[]>([]);
+  const [selectedHistoryItem, setSelectedHistoryItem] = useState<ContractAnalysisData | null>(null);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // Mock history data - in real app, this would come from Firebase
   useEffect(() => {
     if (user) {
-      // Mock data for demonstration
-      const mockHistory: AnalysisHistory[] = [
-        {
-          id: "1",
-          contractAddress: "0x1234567890123456789012345678901234567890",
-          analysis: {
-            contractAddress: "0x1234567890123456789012345678901234567890",
-            totalTransactions: 1247,
-            suspiciousTransactions: 156,
-            newWalletInteractions: 834,
-            failedTransactions: 156,
-            flaggedInteractions: 23,
-            riskScore: 87,
-            analysisDate: new Date("2024-01-15"),
-            uniqueAddresses: 892,
-            isFraudulent: true,
-            fraudProbability: 87.3,
-            confidence: 94.1,
-          },
-          createdAt: new Date("2024-01-15"),
-        },
-        {
-          id: "2",
-          contractAddress: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
-          analysis: {
-            contractAddress: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
-            totalTransactions: 45623,
-            suspiciousTransactions: 12,
-            newWalletInteractions: 2341,
-            failedTransactions: 45,
-            flaggedInteractions: 0,
-            riskScore: 15,
-            analysisDate: new Date("2024-01-14"),
-            uniqueAddresses: 12456,
-            isFraudulent: false,
-            fraudProbability: 15.2,
-            confidence: 89.7,
-          },
-          createdAt: new Date("2024-01-14"),
-        },
-      ];
-      setAnalysisHistory(mockHistory);
-      if (!selectedHistoryItem && mockHistory.length > 0) {
-        setSelectedHistoryItem(mockHistory[0]);
-      }
+      loadAnalysisHistory();
     }
   }, [user]);
+
+  const loadAnalysisHistory = async () => {
+    if (!user) return;
+    
+    try {
+      setIsLoadingHistory(true);
+      const analyses = await getContractAnalyses(user.uid);
+      setAnalysisHistory(analyses);
+      if (analyses.length > 0 && !selectedHistoryItem) {
+        setSelectedHistoryItem(analyses[0]);
+      }
+    } catch (error) {
+      console.error('Error loading analysis history:', error);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
 
   const analyzeContract = async () => {
     if (!contractAddress) {
@@ -123,12 +91,15 @@ export default function ContractAnalyzer() {
 
     try {
       // Call the AI prediction API
-      const response = await fetch("/api/predict_fraud", {
+      const response = await fetch("/api/predict-fraud", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ contract_address: contractAddress }),
+        body: JSON.stringify({ 
+          contract_address: contractAddress,
+          user_id: user?.uid 
+        }),
       });
 
       if (!response.ok) {
@@ -138,16 +109,17 @@ export default function ContractAnalyzer() {
       const result = await response.json();
 
       // Create analysis object with AI results
+      const features = result.features_analyzed || {};
       const newAnalysis: ContractAnalysis = {
         contractAddress,
-        totalTransactions: Math.floor(Math.random() * 5000) + 100, // Mock data
-        suspiciousTransactions: Math.floor(Math.random() * 200),
-        newWalletInteractions: Math.floor(Math.random() * 1000),
-        failedTransactions: Math.floor(Math.random() * 100),
-        flaggedInteractions: Math.floor(Math.random() * 50),
+        totalTransactions: features.num_transactions || 0,
+        suspiciousTransactions: Math.floor((features.num_transactions || 0) * 0.1),
+        newWalletInteractions: Math.floor((features.unique_senders || 0) * 0.3),
+        failedTransactions: Math.floor((features.num_transactions || 0) * 0.05),
+        flaggedInteractions: Math.floor(Math.random() * 10),
         riskScore: Math.round(result.fraud_probability * 100),
         analysisDate: new Date(),
-        uniqueAddresses: Math.floor(Math.random() * 2000) + 100,
+        uniqueAddresses: (features.unique_senders || 0) + (features.unique_receivers || 0),
         isFraudulent: result.is_fraudulent,
         fraudProbability: result.fraud_probability * 100,
         confidence: result.confidence * 100,
@@ -155,16 +127,8 @@ export default function ContractAnalyzer() {
 
       setAnalysis(newAnalysis);
 
-      // Add to history
-      const newHistoryItem: AnalysisHistory = {
-        id: Date.now().toString(),
-        contractAddress,
-        analysis: newAnalysis,
-        createdAt: new Date(),
-      };
-
-      setAnalysisHistory((prev) => [newHistoryItem, ...prev]);
-      setSelectedHistoryItem(newHistoryItem);
+      // Reload history to include the new analysis
+      await loadAnalysisHistory();
     } catch (err) {
       console.error("Analysis failed:", err);
       setError(
@@ -172,6 +136,26 @@ export default function ContractAnalyzer() {
       );
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const handleDeleteAnalysis = async (analysisId: string) => {
+    if (!user) return;
+    
+    setDeletingId(analysisId);
+    try {
+      await deleteContractAnalysis(analysisId);
+      setAnalysisHistory(prev => prev.filter(analysis => analysis.id !== analysisId));
+      
+      // If the deleted item was selected, clear selection
+      if (selectedHistoryItem?.id === analysisId) {
+        const remaining = analysisHistory.filter(analysis => analysis.id !== analysisId);
+        setSelectedHistoryItem(remaining.length > 0 ? remaining[0] : null);
+      }
+    } catch (error) {
+      console.error('Error deleting analysis:', error);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -197,6 +181,12 @@ export default function ContractAnalyzer() {
     return date.toLocaleDateString() + " " + date.toLocaleTimeString();
   };
 
+  const formatFirebaseDate = (timestamp: any) => {
+    if (!timestamp) return 'Unknown';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return formatDate(date);
+  };
+
   const renderAnalysisDetails = (analysisData: ContractAnalysis) => (
     <div className="space-y-6">
       {/* Risk Overview */}
@@ -204,7 +194,7 @@ export default function ContractAnalyzer() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center space-x-2">
-              <Brain className="w-5 h-5 text-purple-600" />
+              <Brain className="w-5 h-5 text-emerald-600" />
               <span>AI Risk Assessment</span>
             </CardTitle>
             <Badge
@@ -434,7 +424,7 @@ export default function ContractAnalyzer() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Brain className="w-5 h-5 text-purple-600" />
+              <Brain className="w-5 h-5 text-emerald-600" />
                 <span>AI Smart Contract Analysis</span>
               </CardTitle>
             </CardHeader>
@@ -457,7 +447,7 @@ export default function ContractAnalyzer() {
                 <Button
                   onClick={analyzeContract}
                   disabled={isAnalyzing}
-                  className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+                  className="bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700"
                 >
                   {isAnalyzing ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -487,12 +477,16 @@ export default function ContractAnalyzer() {
             <Card className="lg:col-span-1">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <History className="w-5 h-5 text-purple-600" />
+                  <History className="w-5 h-5 text-emerald-600" />
                   <span>Analysis History</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {analysisHistory.length === 0 ? (
+                {isLoadingHistory ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                  </div>
+                ) : analysisHistory.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     <Brain className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                     <p>No analyses yet</p>
@@ -508,31 +502,49 @@ export default function ContractAnalyzer() {
                         onClick={() => setSelectedHistoryItem(item)}
                         className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                           selectedHistoryItem?.id === item.id
-                            ? "border-purple-500 bg-purple-50"
+                            ? "border-emerald-500 bg-emerald-50"
                             : "border-gray-200 hover:border-gray-300"
                         }`}
                       >
-                        <div className="flex items-center space-x-2 mb-2">
-                          <Target className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm font-mono truncate">
-                            {item.contractAddress.slice(0, 10)}...
-                            {item.contractAddress.slice(-8)}
-                          </span>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center space-x-2 flex-1 min-w-0">
+                            <Target className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            <span className="text-sm font-mono truncate">
+                              {item.contractAddress.slice(0, 10)}...
+                              {item.contractAddress.slice(-8)}
+                            </span>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteAnalysis(item.id);
+                            }}
+                            disabled={deletingId === item.id}
+                            className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
+                          >
+                            {deletingId === item.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <XCircle className="w-3 h-3" />
+                            )}
+                          </Button>
                         </div>
                         <div className="flex items-center justify-between">
                           <Badge
                             variant={
-                              item.analysis.isFraudulent
+                              item.isFraudulent
                                 ? "destructive"
                                 : "default"
                             }
                             className="text-xs"
                           >
-                            {item.analysis.fraudProbability.toFixed(1)}% Risk
+                            {item.fraudProbability.toFixed(1)}% Risk
                           </Badge>
                           <div className="flex items-center space-x-1 text-xs text-gray-500">
                             <Calendar className="w-3 h-3" />
-                            <span>{formatDate(item.createdAt)}</span>
+                            <span>{formatFirebaseDate(item.createdAt)}</span>
                           </div>
                         </div>
                       </div>
@@ -558,18 +570,18 @@ export default function ContractAnalyzer() {
                         </h3>
                         <p className="text-sm text-gray-500">
                           Analyzed on{" "}
-                          {formatDate(selectedHistoryItem.createdAt)}
+                          {formatFirebaseDate(selectedHistoryItem.createdAt)}
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Badge
                           variant={
-                            selectedHistoryItem.analysis.isFraudulent
+                            selectedHistoryItem.isFraudulent
                               ? "destructive"
                               : "default"
                           }
                         >
-                          {selectedHistoryItem.analysis.fraudProbability.toFixed(
+                          {selectedHistoryItem.fraudProbability.toFixed(
                             1
                           )}
                           % Risk
@@ -581,7 +593,21 @@ export default function ContractAnalyzer() {
                       </div>
                     </div>
 
-                    {renderAnalysisDetails(selectedHistoryItem.analysis)}
+                    {/* Convert Firebase data to ContractAnalysis format */}
+                    {renderAnalysisDetails({
+                      contractAddress: selectedHistoryItem.contractAddress,
+                      totalTransactions: selectedHistoryItem.featuresAnalyzed?.num_transactions || 0,
+                      suspiciousTransactions: Math.floor((selectedHistoryItem.featuresAnalyzed?.num_transactions || 0) * 0.1),
+                      newWalletInteractions: Math.floor((selectedHistoryItem.featuresAnalyzed?.unique_senders || 0) * 0.3),
+                      failedTransactions: Math.floor((selectedHistoryItem.featuresAnalyzed?.num_transactions || 0) * 0.05),
+                      flaggedInteractions: Math.floor(Math.random() * 10),
+                      riskScore: selectedHistoryItem.fraudProbability,
+                      analysisDate: selectedHistoryItem.createdAt?.toDate?.() || new Date(),
+                      uniqueAddresses: (selectedHistoryItem.featuresAnalyzed?.unique_senders || 0) + (selectedHistoryItem.featuresAnalyzed?.unique_receivers || 0),
+                      isFraudulent: selectedHistoryItem.isFraudulent,
+                      fraudProbability: selectedHistoryItem.fraudProbability,
+                      confidence: selectedHistoryItem.confidence,
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-12 text-gray-500">

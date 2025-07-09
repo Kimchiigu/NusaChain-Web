@@ -63,3 +63,16 @@ export interface EtherscanTransaction {
   timeStamp: string;
   methodId: string;
 }
+
+export interface ContractAnalysisData {
+  id: string;
+  contractAddress: string;
+  isFraudulent: boolean;
+  fraudProbability: number;
+  confidence: number;
+  featuresAnalyzed: Record<string, number>;
+  featureImportance: Record<string, number>;
+  modelType: string;
+  userId?: string;
+  createdAt: any;
+}
