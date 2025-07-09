@@ -24,19 +24,19 @@ export default function ContractDemo() {
   return (
     <div className="space-y-8">
       {/* Sign In Prompt */}
-      <Card className="border-purple-200 bg-purple-50">
+      <Card className="border-emerald-200 bg-emerald-50">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-purple-900 mb-2">
+              <h3 className="text-lg font-semibold text-emerald-900 mb-2">
                 Sign in to access AI Contract Analysis
               </h3>
-              <p className="text-purple-700">
+              <p className="text-emerald-700">
                 Get AI-powered fraud detection with detailed analysis history and advanced reporting.
               </p>
             </div>
             <Link href="/auth/signin">
-              <Button className="bg-purple-600 hover:bg-purple-700">
+              <Button className="bg-emerald-600 hover:bg-emerald-700">
                 Sign In
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -49,14 +49,14 @@ export default function ContractDemo() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <Brain className="w-6 h-6 text-purple-600" />
+            <Brain className="w-6 h-6 text-emerald-600" />
             <span>AI-Powered Smart Contract Analysis</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-gradient-to-r from-emerald-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Target className="w-8 h-8 text-white" />
               </div>
               <h4 className="font-semibold text-gray-900 mb-2">Random Forest Algorithm</h4>
@@ -66,7 +66,7 @@ export default function ContractDemo() {
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Zap className="w-8 h-8 text-white" />
               </div>
               <h4 className="font-semibold text-gray-900 mb-2">Real-time Analysis</h4>
@@ -76,7 +76,7 @@ export default function ContractDemo() {
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-gradient-to-r from-emerald-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <BarChart3 className="w-8 h-8 text-white" />
               </div>
               <h4 className="font-semibold text-gray-900 mb-2">Detailed Reports</h4>
@@ -96,7 +96,7 @@ export default function ContractDemo() {
         <CardContent className="space-y-6">
           {/* Step 1 */}
           <div className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+            <div className="w-8 h-8 bg-gradient-to-r from-emerald-600 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
               1
             </div>
             <div className="flex-1">
@@ -116,7 +116,7 @@ export default function ContractDemo() {
 
           {/* Step 2 */}
           <div className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+            <div className="w-8 h-8 bg-gradient-to-r from-emerald-600 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
               2
             </div>
             <div className="flex-1">
@@ -149,7 +149,7 @@ export default function ContractDemo() {
 
           {/* Step 3 */}
           <div className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+            <div className="w-8 h-8 bg-gradient-to-r from-emerald-600 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
               3
             </div>
             <div className="flex-1">
@@ -179,7 +179,7 @@ export default function ContractDemo() {
 
           {/* Step 4 */}
           <div className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+            <div className="w-8 h-8 bg-gradient-to-r from-emerald-600 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
               4
             </div>
             <div className="flex-1">
@@ -254,7 +254,7 @@ export default function ContractDemo() {
                 <span className="text-sm">Unique Address Ratio</span>
                 <div className="flex items-center space-x-2">
                   <div className="w-16 h-2 bg-gray-200 rounded">
-                    <div className="w-12 h-2 bg-yellow-500 rounded"></div>
+                    <div className="w-12 h-2 bg-emerald-500 rounded"></div>
                   </div>
                   <span className="text-xs text-gray-500">Med</span>
                 </div>
@@ -286,7 +286,7 @@ export default function ContractDemo() {
                 <span className="text-sm">ERC20 Token Interactions</span>
                 <div className="flex items-center space-x-2">
                   <div className="w-16 h-2 bg-gray-200 rounded">
-                    <div className="w-11 h-2 bg-purple-500 rounded"></div>
+                    <div className="w-11 h-2 bg-emerald-500 rounded"></div>
                   </div>
                   <span className="text-xs text-gray-500">Med</span>
                 </div>
@@ -376,7 +376,7 @@ export default function ContractDemo() {
 
           <div className="mt-6 text-center">
             <Link href="/auth/signup">
-              <Button size="lg" className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600">
+              <Button size="lg" className="bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700">
                 Get Started Free
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
