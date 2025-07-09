@@ -167,45 +167,6 @@ export default function ExtensionSimulator() {
         </CardContent>
       </Card>
 
-      {/* Extension Preview */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Chrome className="w-5 h-5 text-blue-600" />
-            <span>Extension Demo</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-sm text-gray-600 mb-4">
-            This simulates how the NusaChain browser extension would work in real-time, 
-            checking trust scores as you browse Web3 sites.
-          </div>
-          
-          <div className="flex space-x-4">
-            <div className="flex-1">
-              <Input
-                placeholder="Enter a URL to check (e.g., https://example.com)"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                className="w-full"
-              />
-            </div>
-            <Button
-              onClick={simulateExtensionCheck}
-              disabled={isChecking || !url}
-              variant="outline"
-            >
-              {isChecking ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Shield className="w-4 h-4 mr-2" />
-              )}
-              Check
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Extension Alert Simulation */}
       {alert && (
         <Card className={`border-2 ${getAlertStyle(alert.type)}`}>
@@ -309,7 +270,7 @@ export default function ExtensionSimulator() {
                 <div>
                   <h4 className="font-medium">Transaction Interception</h4>
                   <p className="text-sm text-gray-600">
-                    Safely intercepts wallet transactions before they're sent to analyze potential threats
+                    Safely intercepts wallet transactions before they&apos;re sent to analyze potential threats
                   </p>
                 </div>
               </div>
@@ -354,31 +315,6 @@ export default function ExtensionSimulator() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Installation CTA */}
-      <Card className="bg-gradient-to-r from-emerald-500 to-blue-500 text-white">
-        <CardContent className="p-8 text-center">
-          <h2 className="text-2xl font-bold mb-4">Ready to Protect Your Web3 Experience?</h2>
-          <p className="text-lg mb-6 opacity-90">
-            Install the NusaChain Security Extension and browse Web3 with confidence
-          </p>
-          <a 
-            href="https://chromewebstore.google.com/search/nusa%20chain?hl=en-US&utm_source=ext_sidebar"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button
-              size="lg"
-              variant="secondary"
-              className="bg-white text-gray-900 hover:bg-gray-100"
-            >
-              <Download className="w-5 h-5 mr-2" />
-              Install Free Extension
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-          </a>
-        </CardContent>
-      </Card>
     </div>
   );
 }
