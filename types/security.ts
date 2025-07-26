@@ -7,7 +7,7 @@ export interface AuditReport {
   stage1Output: string;
   stage2Output: string;
   isMalicious: boolean;
-  threatLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  threatLevel: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
   findings: string[];
   recommendations: string[];
   contractAddresses: string[];
@@ -28,13 +28,13 @@ export interface SuspiciousTransaction {
   contractAddress: string;
   transactionHash: string;
   suspiciousPattern: string;
-  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+  riskLevel: "LOW" | "MEDIUM" | "HIGH";
   description: string;
   createdAt: any;
 }
 
 export interface ExtensionAlert {
-  type: 'DANGER' | 'WARNING' | 'INFO';
+  type: "DANGER" | "WARNING" | "INFO";
   title: string;
   message: string;
   url: string;

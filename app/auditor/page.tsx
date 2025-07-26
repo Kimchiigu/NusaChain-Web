@@ -2,14 +2,11 @@
 
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 import AuditorPanel from '@/components/auditor/AuditorPanel';
 import AuditorDemo from '@/components/auditor/AuditorDemo';
 
 export default function AuditorPage() {
   const [user, loading] = useAuthState(auth);
-  const router = useRouter();
 
   if (loading) {
     return (

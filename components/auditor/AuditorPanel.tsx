@@ -5,26 +5,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Search,
   Play,
   Shield,
   AlertCircle,
   CheckCircle2,
   XCircle,
   Loader2,
-  ExternalLink,
   History,
   Calendar,
   Globe,
+  Search,
+  Activity,
 } from "lucide-react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/lib/firebase";
 import { saveAuditReport, getAuditReports } from "@/lib/firebase-utils";
 import { deleteAuditReport, updateTrustScore } from "@/lib/firebase-utils";
-import { AuditReport } from "@/types/security";
+import type { AuditReport } from "@/types/security";
+import { EnhancedAuditRenderer } from "./AuditVisualizer";
 
 interface AuditResult {
   url: string;
@@ -43,7 +43,8 @@ export default function AuditorPanel() {
   const [result, setResult] = useState<AuditResult | null>(null);
   const [error, setError] = useState("");
   const [auditHistory, setAuditHistory] = useState<AuditReport[]>([]);
-  const [selectedHistoryItem, setSelectedHistoryItem] = useState<AuditReport | null>(null);
+  const [selectedHistoryItem, setSelectedHistoryItem] =
+    useState<AuditReport | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -55,7 +56,7 @@ export default function AuditorPanel() {
 
   const loadAuditHistory = async () => {
     if (!user) return;
-    
+
     try {
       setIsLoadingHistory(true);
       const reports = await getAuditReports(user.uid);
@@ -64,7 +65,7 @@ export default function AuditorPanel() {
         setSelectedHistoryItem(reports[0]);
       }
     } catch (error) {
-      console.error('Error loading audit history:', error);
+      console.error("Error loading audit history:", error);
     } finally {
       setIsLoadingHistory(false);
     }
@@ -75,7 +76,6 @@ export default function AuditorPanel() {
       setError("Please enter a URL to audit");
       return;
     }
-
     if (!user) {
       setError("Please sign in to run audits");
       return;
@@ -119,8 +119,8 @@ export default function AuditorPanel() {
         auditOutput.includes("DECREASED") ||
         auditOutput.includes("drainer") ||
         auditOutput.includes("malicious");
-      let threatLevel: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" = "LOW";
 
+      let threatLevel: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" = "LOW";
       if (auditOutput.includes("CRITICAL") || auditOutput.includes("drainer")) {
         threatLevel = "CRITICAL";
       } else if (
@@ -160,10 +160,9 @@ export default function AuditorPanel() {
 
       // Save to Firebase
       if (response.ok) {
-        // Update trust score based on audit results
         const scoreChange = isMalicious ? -15 : 5;
         await updateTrustScore(url, scoreChange);
-        
+
         await saveAuditReport({
           url,
           userId: user.uid,
@@ -175,10 +174,9 @@ export default function AuditorPanel() {
           recommendations: isMalicious
             ? ["Avoid interacting with this site", "Report to security team"]
             : ["Site appears safe"],
-          contractAddresses: [], // Would extract from audit output
+          contractAddresses: [],
         });
-        
-        // Reload history to include the new audit
+
         await loadAuditHistory();
       }
     } catch (err) {
@@ -191,19 +189,18 @@ export default function AuditorPanel() {
 
   const handleDeleteAudit = async (auditId: string) => {
     if (!user) return;
-    
+
     setDeletingId(auditId);
     try {
       await deleteAuditReport(auditId);
-      setAuditHistory(prev => prev.filter(audit => audit.id !== auditId));
-      
-      // If the deleted item was selected, clear selection
+      setAuditHistory((prev) => prev.filter((audit) => audit.id !== auditId));
+
       if (selectedHistoryItem?.id === auditId) {
-        const remaining = auditHistory.filter(audit => audit.id !== auditId);
+        const remaining = auditHistory.filter((audit) => audit.id !== auditId);
         setSelectedHistoryItem(remaining.length > 0 ? remaining[0] : null);
       }
     } catch (error) {
-      console.error('Error deleting audit:', error);
+      console.error("Error deleting audit:", error);
     } finally {
       setDeletingId(null);
     }
@@ -225,9 +222,9 @@ export default function AuditorPanel() {
   };
 
   const formatDate = (timestamp: any) => {
-    if (!timestamp) return 'Unknown';
+    if (!timestamp) return "Unknown";
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
   };
 
   return (
@@ -270,7 +267,6 @@ export default function AuditorPanel() {
                   {isAnalyzing ? "Analyzing..." : "Run Full Audit"}
                 </Button>
               </div>
-
               {error && (
                 <div className="flex items-center space-x-2 text-red-600 bg-red-50 p-3 rounded-lg">
                   <AlertCircle className="w-4 h-4" />
@@ -294,7 +290,9 @@ export default function AuditorPanel() {
                     <span>Audit Results</span>
                   </CardTitle>
                   <div className="flex items-center space-x-2">
-                    <Badge variant={result.isMalicious ? "destructive" : "default"}>
+                    <Badge
+                      variant={result.isMalicious ? "destructive" : "default"}
+                    >
                       {result.threatLevel}
                     </Badge>
                     {result.isMalicious ? (
@@ -309,7 +307,9 @@ export default function AuditorPanel() {
                 {/* Summary */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="text-sm font-medium text-gray-600">Status</div>
+                    <div className="text-sm font-medium text-gray-600">
+                      Status
+                    </div>
                     <div
                       className={`text-lg font-bold ${
                         result.isMalicious ? "text-red-600" : "text-green-600"
@@ -339,7 +339,9 @@ export default function AuditorPanel() {
                 {/* Findings */}
                 {result.findings.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-3">Key Findings</h4>
+                    <h4 className="font-medium text-gray-900 mb-3">
+                      Key Findings
+                    </h4>
                     <div className="space-y-2">
                       {result.findings.map((finding, index) => (
                         <div
@@ -354,27 +356,20 @@ export default function AuditorPanel() {
                   </div>
                 )}
 
-                {/* Stage 1 Results */}
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-3">
-                    Stage 1: Frontend Analysis
-                  </h4>
-                  <Textarea
-                    value={result.stage1Output}
-                    readOnly
-                    className="min-h-[150px] font-mono text-sm"
+                {/* Enhanced Visual Stage Results */}
+                <div className="space-y-8">
+                  <EnhancedAuditRenderer
+                    title="Frontend Analysis"
+                    output={result.stage1Output}
+                    icon={Search}
+                    stageNumber={1}
                   />
-                </div>
 
-                {/* Stage 2 Results */}
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-3">
-                    Stage 2: Transaction Simulation
-                  </h4>
-                  <Textarea
-                    value={result.stage2Output}
-                    readOnly
-                    className="min-h-[150px] font-mono text-sm"
+                  <EnhancedAuditRenderer
+                    title="Transaction Simulation"
+                    output={result.stage2Output}
+                    icon={Activity}
+                    stageNumber={2}
                   />
                 </div>
               </CardContent>
@@ -401,7 +396,9 @@ export default function AuditorPanel() {
                   <div className="text-center py-8 text-gray-500">
                     <Shield className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                     <p>No audits yet</p>
-                    <p className="text-sm">Run your first audit to see history here</p>
+                    <p className="text-sm">
+                      Run your first audit to see history here
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -411,8 +408,8 @@ export default function AuditorPanel() {
                         onClick={() => setSelectedHistoryItem(audit)}
                         className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                           selectedHistoryItem?.id === audit.id
-                            ? 'border-emerald-500 bg-emerald-50'
-                            : 'border-gray-200 hover:border-gray-300'
+                            ? "border-emerald-500 bg-emerald-50"
+                            : "border-gray-200 hover:border-gray-300"
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
@@ -441,7 +438,9 @@ export default function AuditorPanel() {
                         </div>
                         <div className="flex items-center justify-between">
                           <Badge
-                            variant={audit.isMalicious ? "destructive" : "default"}
+                            variant={
+                              audit.isMalicious ? "destructive" : "default"
+                            }
                             className="text-xs"
                           >
                             {audit.threatLevel}
@@ -469,14 +468,20 @@ export default function AuditorPanel() {
                     {/* Header */}
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-lg font-semibold">{selectedHistoryItem.url}</h3>
+                        <h3 className="text-lg font-semibold">
+                          {selectedHistoryItem.url}
+                        </h3>
                         <p className="text-sm text-gray-500">
                           Audited on {formatDate(selectedHistoryItem.createdAt)}
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Badge
-                          variant={selectedHistoryItem.isMalicious ? "destructive" : "default"}
+                          variant={
+                            selectedHistoryItem.isMalicious
+                              ? "destructive"
+                              : "default"
+                          }
                         >
                           {selectedHistoryItem.threatLevel}
                         </Badge>
@@ -491,13 +496,19 @@ export default function AuditorPanel() {
                     {/* Summary */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="bg-gray-50 p-4 rounded-lg">
-                        <div className="text-sm font-medium text-gray-600">Status</div>
+                        <div className="text-sm font-medium text-gray-600">
+                          Status
+                        </div>
                         <div
                           className={`text-lg font-bold ${
-                            selectedHistoryItem.isMalicious ? "text-red-600" : "text-green-600"
+                            selectedHistoryItem.isMalicious
+                              ? "text-red-600"
+                              : "text-green-600"
                           }`}
                         >
-                          {selectedHistoryItem.isMalicious ? "Malicious" : "Safe"}
+                          {selectedHistoryItem.isMalicious
+                            ? "Malicious"
+                            : "Safe"}
                         </div>
                       </div>
                       <div className="bg-gray-50 p-4 rounded-lg">
@@ -521,17 +532,21 @@ export default function AuditorPanel() {
                     {/* Findings */}
                     {selectedHistoryItem.findings.length > 0 && (
                       <div>
-                        <h4 className="font-medium text-gray-900 mb-3">Key Findings</h4>
+                        <h4 className="font-medium text-gray-900 mb-3">
+                          Key Findings
+                        </h4>
                         <div className="space-y-2">
-                          {selectedHistoryItem.findings.map((finding, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center space-x-2 text-sm"
-                            >
-                              <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                              <span>{finding}</span>
-                            </div>
-                          ))}
+                          {selectedHistoryItem.findings.map(
+                            (finding, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center space-x-2 text-sm"
+                              >
+                                <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                                <span>{finding}</span>
+                              </div>
+                            )
+                          )}
                         </div>
                       </div>
                     )}
@@ -539,44 +554,40 @@ export default function AuditorPanel() {
                     {/* Recommendations */}
                     {selectedHistoryItem.recommendations.length > 0 && (
                       <div>
-                        <h4 className="font-medium text-gray-900 mb-3">Recommendations</h4>
+                        <h4 className="font-medium text-gray-900 mb-3">
+                          Recommendations
+                        </h4>
                         <div className="space-y-2">
-                          {selectedHistoryItem.recommendations.map((rec, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center space-x-2 text-sm"
-                            >
-                              <div className="w-2 h-2 bg-green-500 rounded-full" />
-                              <span>{rec}</span>
-                            </div>
-                          ))}
+                          {selectedHistoryItem.recommendations.map(
+                            (rec, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center space-x-2 text-sm"
+                              >
+                                <div className="w-2 h-2 bg-green-500 rounded-full" />
+                                <span>{rec}</span>
+                              </div>
+                            )
+                          )}
                         </div>
                       </div>
                     )}
 
-                    {/* Stage Outputs */}
-                    <div className="space-y-4">
-                      <div>
-                        <h4 className="font-medium text-gray-900 mb-3">
-                          Stage 1: Frontend Analysis
-                        </h4>
-                        <Textarea
-                          value={selectedHistoryItem.stage1Output}
-                          readOnly
-                          className="min-h-[150px] font-mono text-sm"
-                        />
-                      </div>
+                    {/* Enhanced Visual Stage Outputs for History */}
+                    <div className="space-y-8">
+                      <EnhancedAuditRenderer
+                        title="Frontend Analysis"
+                        output={selectedHistoryItem.stage1Output}
+                        icon={Search}
+                        stageNumber={1}
+                      />
 
-                      <div>
-                        <h4 className="font-medium text-gray-900 mb-3">
-                          Stage 2: Transaction Simulation
-                        </h4>
-                        <Textarea
-                          value={selectedHistoryItem.stage2Output}
-                          readOnly
-                          className="min-h-[150px] font-mono text-sm"
-                        />
-                      </div>
+                      <EnhancedAuditRenderer
+                        title="Transaction Simulation"
+                        output={selectedHistoryItem.stage2Output}
+                        icon={Activity}
+                        stageNumber={2}
+                      />
                     </div>
                   </div>
                 ) : (
