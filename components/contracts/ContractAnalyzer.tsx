@@ -22,7 +22,10 @@ import {
 } from "lucide-react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/lib/firebase";
-import { getContractAnalyses, deleteContractAnalysis } from "@/lib/firebase-utils";
+import {
+  getContractAnalyses,
+  deleteContractAnalysis,
+} from "@/lib/firebase-utils";
 import { ContractAnalysisData } from "@/types/security";
 
 interface ContractAnalysis {
@@ -46,8 +49,11 @@ export default function ContractAnalyzer() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<ContractAnalysis | null>(null);
   const [error, setError] = useState("");
-  const [analysisHistory, setAnalysisHistory] = useState<ContractAnalysisData[]>([]);
-  const [selectedHistoryItem, setSelectedHistoryItem] = useState<ContractAnalysisData | null>(null);
+  const [analysisHistory, setAnalysisHistory] = useState<
+    ContractAnalysisData[]
+  >([]);
+  const [selectedHistoryItem, setSelectedHistoryItem] =
+    useState<ContractAnalysisData | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -59,7 +65,7 @@ export default function ContractAnalyzer() {
 
   const loadAnalysisHistory = async () => {
     if (!user) return;
-    
+
     try {
       setIsLoadingHistory(true);
       const analyses = await getContractAnalyses(user.uid);
@@ -68,7 +74,7 @@ export default function ContractAnalyzer() {
         setSelectedHistoryItem(analyses[0]);
       }
     } catch (error) {
-      console.error('Error loading analysis history:', error);
+      console.error("Error loading analysis history:", error);
     } finally {
       setIsLoadingHistory(false);
     }
@@ -96,9 +102,9 @@ export default function ContractAnalyzer() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           contract_address: contractAddress,
-          user_id: user?.uid 
+          user_id: user?.uid,
         }),
       });
 
@@ -113,13 +119,16 @@ export default function ContractAnalyzer() {
       const newAnalysis: ContractAnalysis = {
         contractAddress,
         totalTransactions: features.num_transactions || 0,
-        suspiciousTransactions: Math.floor((features.num_transactions || 0) * 0.1),
+        suspiciousTransactions: Math.floor(
+          (features.num_transactions || 0) * 0.1
+        ),
         newWalletInteractions: Math.floor((features.unique_senders || 0) * 0.3),
         failedTransactions: Math.floor((features.num_transactions || 0) * 0.05),
         flaggedInteractions: Math.floor(Math.random() * 10),
         riskScore: Math.round(result.fraud_probability * 100),
         analysisDate: new Date(),
-        uniqueAddresses: (features.unique_senders || 0) + (features.unique_receivers || 0),
+        uniqueAddresses:
+          (features.unique_senders || 0) + (features.unique_receivers || 0),
         isFraudulent: result.is_fraudulent,
         fraudProbability: result.fraud_probability * 100,
         confidence: result.confidence * 100,
@@ -141,19 +150,23 @@ export default function ContractAnalyzer() {
 
   const handleDeleteAnalysis = async (analysisId: string) => {
     if (!user) return;
-    
+
     setDeletingId(analysisId);
     try {
       await deleteContractAnalysis(analysisId);
-      setAnalysisHistory(prev => prev.filter(analysis => analysis.id !== analysisId));
-      
+      setAnalysisHistory((prev) =>
+        prev.filter((analysis) => analysis.id !== analysisId)
+      );
+
       // If the deleted item was selected, clear selection
       if (selectedHistoryItem?.id === analysisId) {
-        const remaining = analysisHistory.filter(analysis => analysis.id !== analysisId);
+        const remaining = analysisHistory.filter(
+          (analysis) => analysis.id !== analysisId
+        );
         setSelectedHistoryItem(remaining.length > 0 ? remaining[0] : null);
       }
     } catch (error) {
-      console.error('Error deleting analysis:', error);
+      console.error("Error deleting analysis:", error);
     } finally {
       setDeletingId(null);
     }
@@ -182,7 +195,7 @@ export default function ContractAnalyzer() {
   };
 
   const formatFirebaseDate = (timestamp: any) => {
-    if (!timestamp) return 'Unknown';
+    if (!timestamp) return "Unknown";
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return formatDate(date);
   };
@@ -424,7 +437,7 @@ export default function ContractAnalyzer() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-              <Brain className="w-5 h-5 text-emerald-600" />
+                <Brain className="w-5 h-5 text-emerald-600" />
                 <span>AI Smart Contract Analysis</span>
               </CardTitle>
             </CardHeader>
@@ -534,9 +547,7 @@ export default function ContractAnalyzer() {
                         <div className="flex items-center justify-between">
                           <Badge
                             variant={
-                              item.isFraudulent
-                                ? "destructive"
-                                : "default"
+                              item.isFraudulent ? "destructive" : "default"
                             }
                             className="text-xs"
                           >
@@ -581,10 +592,8 @@ export default function ContractAnalyzer() {
                               : "default"
                           }
                         >
-                          {selectedHistoryItem.fraudProbability.toFixed(
-                            1
-                          )}
-                          % Risk
+                          {selectedHistoryItem.fraudProbability.toFixed(1)}%
+                          Risk
                         </Badge>
                         <Button variant="outline" size="sm">
                           <ExternalLink className="w-4 h-4 mr-2" />
@@ -596,14 +605,30 @@ export default function ContractAnalyzer() {
                     {/* Convert Firebase data to ContractAnalysis format */}
                     {renderAnalysisDetails({
                       contractAddress: selectedHistoryItem.contractAddress,
-                      totalTransactions: selectedHistoryItem.featuresAnalyzed?.num_transactions || 0,
-                      suspiciousTransactions: Math.floor((selectedHistoryItem.featuresAnalyzed?.num_transactions || 0) * 0.1),
-                      newWalletInteractions: Math.floor((selectedHistoryItem.featuresAnalyzed?.unique_senders || 0) * 0.3),
-                      failedTransactions: Math.floor((selectedHistoryItem.featuresAnalyzed?.num_transactions || 0) * 0.05),
+                      totalTransactions:
+                        selectedHistoryItem.featuresAnalyzed
+                          ?.num_transactions || 0,
+                      suspiciousTransactions: Math.floor(
+                        (selectedHistoryItem.featuresAnalyzed
+                          ?.num_transactions || 0) * 0.1
+                      ),
+                      newWalletInteractions: Math.floor(
+                        (selectedHistoryItem.featuresAnalyzed?.unique_senders ||
+                          0) * 0.3
+                      ),
+                      failedTransactions: Math.floor(
+                        (selectedHistoryItem.featuresAnalyzed
+                          ?.num_transactions || 0) * 0.05
+                      ),
                       flaggedInteractions: Math.floor(Math.random() * 10),
                       riskScore: selectedHistoryItem.fraudProbability,
-                      analysisDate: selectedHistoryItem.createdAt?.toDate?.() || new Date(),
-                      uniqueAddresses: (selectedHistoryItem.featuresAnalyzed?.unique_senders || 0) + (selectedHistoryItem.featuresAnalyzed?.unique_receivers || 0),
+                      analysisDate:
+                        selectedHistoryItem.createdAt?.toDate?.() || new Date(),
+                      uniqueAddresses:
+                        (selectedHistoryItem.featuresAnalyzed?.unique_senders ||
+                          0) +
+                        (selectedHistoryItem.featuresAnalyzed
+                          ?.unique_receivers || 0),
                       isFraudulent: selectedHistoryItem.isFraudulent,
                       fraudProbability: selectedHistoryItem.fraudProbability,
                       confidence: selectedHistoryItem.confidence,

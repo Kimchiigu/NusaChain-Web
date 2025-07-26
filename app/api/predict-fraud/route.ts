@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
-// import * as ort from "onnxruntime-node";
+import * as ort from "onnxruntime-node";
 import {
   saveContractAnalysis,
   getContractAnalysis,
@@ -65,32 +65,32 @@ async function fetchTransactions(contractAddress: string) {
   }
 }
 
-// async function predictFraud(features: Record<string, number>) {
-//   try {
-//     const session = await ort.InferenceSession.create(
-//       "public/model/fraud_detection_model.onnx"
-//     );
-//     // Ensure features are in the correct order and all are numbers
-//     const inputArray = FEATURE_COLUMNS.map((key) =>
-//       typeof features[key] === "number" ? features[key] : 0
-//     );
-//     const input = new ort.Tensor("float32", inputArray, [
-//       1,
-//       FEATURE_COLUMNS.length,
-//     ]);
-//     const outputs = await session.run({ float_input: input });
-//     const probability = outputs.probabilities.data; // Adjust based on your model's output name
-//     const prediction = Number(probability[1]) > 0.5 ? 1 : 0;
-//     return {
-//       is_fraudulent: !!prediction,
-//       fraud_probability: Number(probability[1]),
-//       confidence: Math.max(Number(probability[0]), Number(probability[1])),
-//     };
-//   } catch (error) {
-//     console.error("Error in predictFraud:", error);
-//     throw new Error("Failed to make prediction");
-//   }
-// }
+async function predictFraud(features: Record<string, number>) {
+  try {
+    const session = await ort.InferenceSession.create(
+      "public/model/fraud_detection_model.onnx"
+    );
+    // Ensure features are in the correct order and all are numbers
+    const inputArray = FEATURE_COLUMNS.map((key) =>
+      typeof features[key] === "number" ? features[key] : 0
+    );
+    const input = new ort.Tensor("float32", inputArray, [
+      1,
+      FEATURE_COLUMNS.length,
+    ]);
+    const outputs = await session.run({ float_input: input });
+    const probability = outputs.probabilities.data; // Adjust based on your model's output name
+    const prediction = Number(probability[1]) > 0.5 ? 1 : 0;
+    return {
+      is_fraudulent: !!prediction,
+      fraud_probability: Number(probability[1]),
+      confidence: Math.max(Number(probability[0]), Number(probability[1])),
+    };
+  } catch (error) {
+    console.error("Error in predictFraud:", error);
+    throw new Error("Failed to make prediction");
+  }
+}
 
 function extractFeatures(transactions: any[], contractAddress: string) {
   const txCount = transactions.length;
@@ -181,7 +181,7 @@ export async function POST(request: NextRequest) {
 
     const transactions = await fetchTransactions(contract_address);
     const features = extractFeatures(transactions, contract_address);
-    // const prediction = await predictFraud(features);
+    const prediction = await predictFraud(features);
 
     const featureImportance = {
       num_transactions: 0.15,
@@ -199,32 +199,32 @@ export async function POST(request: NextRequest) {
       time_diff_mins: 0.01,
     };
 
-    // const analysisData = {
-    //   contractAddress: contract_address,
-    //   isFraudulent: prediction.is_fraudulent ?? false,
-    //   fraudProbability: prediction.fraud_probability * 100,
-    //   confidence: prediction.confidence * 100,
-    //   featuresAnalyzed: features,
-    //   featureImportance,
-    //   modelType: "HistGradientBoostingClassifier",
-    //   userId: user_id || null,
-    //   createdAt: new Date(),
-    // };
+    const analysisData = {
+      contractAddress: contract_address,
+      isFraudulent: prediction.is_fraudulent ?? false,
+      fraudProbability: prediction.fraud_probability * 100,
+      confidence: prediction.confidence * 100,
+      featuresAnalyzed: features,
+      featureImportance,
+      modelType: "HistGradientBoostingClassifier",
+      userId: user_id || null,
+      createdAt: new Date(),
+    };
 
     // @ts-ignore
     await saveContractAnalysis(analysisData);
 
-    // const response: PredictionResponse = {
-    //   contract_address,
-    //   is_fraudulent: prediction.is_fraudulent,
-    //   fraud_probability: prediction.fraud_probability,
-    //   confidence: prediction.confidence,
-    //   features_analyzed: features,
-    //   model_type: "HistGradientBoostingClassifier",
-    //   feature_importance: featureImportance,
-    // };
+    const response: PredictionResponse = {
+      contract_address,
+      is_fraudulent: prediction.is_fraudulent,
+      fraud_probability: prediction.fraud_probability,
+      confidence: prediction.confidence,
+      features_analyzed: features,
+      model_type: "HistGradientBoostingClassifier",
+      feature_importance: featureImportance,
+    };
 
-    // return NextResponse.json(response);
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error in fraud prediction:", error);
     return NextResponse.json(
