@@ -13,7 +13,6 @@
   <a href="#-how-it-works">How It Works</a> •
   <a href="#-technology-stack">Tech Stack</a> •
   <a href="#-getting-started">Getting Started</a> •
-  <a href="#-contributing">Contributing</a> •
   <a href="#-license">License</a>
 </p>
 
